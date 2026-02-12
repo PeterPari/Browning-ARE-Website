@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Browning ARC — Architecture & Real Estate</title>
+  
+  <!-- IMPORTS: Google Fonts for Premium Eco-System -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ═══════════════════════════════════════════════════════
+       CORE VARS & RESET
+       ═══════════════════════════════════════════════════════ */
+    :root {
+      /* Palette: Deep Midnight & Architectural Grayscale */
+      --bg-deep: #05080f;
+      --bg-panel: rgba(15, 20, 30, 0.6);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --glass-highlight: rgba(255, 255, 255, 0.15);
+      
+      --text-main: #f0f0f0;
+      --text-muted: #94a3b8;
+      --text-dim: #475569;
+      
+      /* Accent: "Electric Teal" - sophisticated, not primary blue */
+      --accent: #2dd4bf; 
+      
+      --font-display: 'Space Grotesk', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      
+      --ease-out: cubic-bezier(0.215, 0.61, 0.355, 1);
+    }
+
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background-color: var(--bg-deep);
+      color: var(--text-main);
+      font-family: var(--font-body);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       BACKGROUND GRAPHICS
+       ═══════════════════════════════════════════════════════ */
+    .blueprint-grid {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      
+      /* Tech-Grid: Major and Minor lines */
+      background-image: 
+        linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px),
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
+      background-position: -1px -1px, -1px -1px, -1px -1px, -1px -1px;
+      opacity: 0.6;
+    }
+
+    /* Vignette for focus */
+    .vignette {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background: radial-gradient(circle at 50% 50%, transparent 20%, #05080f 100%);
+      pointer-events: none;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       LAYOUT UTILITIES
+       ═══════════════════════════════════════════════════════ */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+      position: relative;
+    }
+
+    .section-spacer {
+      height: 120px;
+    }
+
+    /* Typography */
+    h1, h2, h3, h4 {
+      font-family: var(--font-display);
+      font-weight: 500;
+      letter-spacing: -0.02em;
+    }
+
+    .label-mono {
+      font-family: 'Space Grotesk', monospace;
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 12px;
+      display: block;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       COMPONENTS
+       ═══════════════════════════════════════════════════════ */
+    
+    /* Tech Decoration */
+    .tech-cross {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      pointer-events: none;
+    }
+    .tech-cross::before, .tech-cross::after {
+      content: '';
+      position: absolute;
+      background: var(--accent);
+      opacity: 0.5;
+    }
+    .tech-cross::before { width: 100%; height: 1px; top: 50%; }
+    .tech-cross::after { width: 1px; height: 100%; left: 50%; }
+    
+    /* GLASS PANEL - The core UI element */
+    .glass-panel {
+      background: var(--bg-panel);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border);
+      padding: 40px;
+      position: relative;
+      transition: all 0.5s var(--ease-out);
+    }
+    
+    .glass-panel:hover {
+      border-color: var(--glass-highlight);
+      background: rgba(20, 25, 40, 0.7);
+      transform: translateY(-2px);
+      box-shadow: 0 20px 40px -10px rgba(0,0,0,0.5);
+    }
+
+    /* Corner marks */
+    .mark {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      border: 1px solid var(--text-muted);
+      opacity: 0.5;
+      transition: opacity 0.3s;
+    }
+    .glass-panel:hover .mark { opacity: 1; border-color: var(--accent); }
+    .mark-tl { top: -1px; left: -1px; border-right: none; border-bottom: none; }
+    .mark-tr { top: -1px; right: -1px; border-left: none; border-bottom: none; }
+    .mark-bl { bottom: -1px; left: -1px; border-right: none; border-top: none; }
+    .mark-br { bottom: -1px; right: -1px; border-left: none; border-top: none; }
+
+    /* ═══════════════════════════════════════════════════════
+       HERO SECTION
+       ═══════════════════════════════════════════════════════ */
+    .hero {
+      min-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      margin-top: 60px;
+    }
+
+    .hero__content {
+      z-index: 2;
+    }
+
+    .hero__title {
+      font-size: clamp(3rem, 8vw, 6rem); /* Responsive giant text */
+      line-height: 0.95;
+      margin-bottom: 24px;
+      color: var(--text-main);
+    }
+    
+    .hero__title span {
+      color: var(--text-dim);
+      display: block; /* Stack bits */
+      font-size: 0.5em;
+    }
+
+    .hero__visual {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 50%;
+      height: 100%;
+      opacity: 0.7;
+      z-index: 1;
+      mask-image: linear-gradient(to right, transparent, black 40%);
+      -webkit-mask-image: linear-gradient(to right, transparent, black 40%);
+      pointer-events: none;
+    }
+    
+    .hero__visual img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: grayscale(20%) contrast(110%);
+    }
+
+    /* Specs Strip */
+    .hero-specs {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1px;
+      background: var(--glass-border);
+      border: 1px solid var(--glass-border);
+      margin-top: 60px;
+      max-width: 800px;
+    }
+
+    .spec-item {
+      background: rgba(10, 10, 15, 0.8); /* Darker backdrop */
+      padding: 16px 24px;
+    }
+
+    .spec-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+    .spec-val {
+      font-family: var(--font-display);
+      font-size: 14px;
+      color: var(--accent);
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       ABOUT SECTION (Asymmetrical)
+       ═══════════════════════════════════════════════════════ */
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: center;
+    }
+
+    .about-visual {
+      position: relative;
+      height: 500px;
+    }
+
+    .about-visual img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: grayscale(20%) contrast(110%);
+      transition: filter 0.5s ease;
+    }
+    
+    .glass-frame {
+      position: absolute;
+      inset: 20px -20px -20px 20px; /* Offset border */
+      border: 1px solid var(--accent);
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .about-text p {
+      font-size: 1.125rem;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+      font-weight: 300;
+    }
+
+    .about-text strong {
+      color: var(--text-main);
+      font-weight: 500;
+    }
+    
+    .leadership-tag {
+      margin-top: 32px;
+      padding-top: 24px;
+      border-top: 1px solid var(--glass-border);
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+    
+    .leadership-tag .icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--glass-highlight);
+      display: grid;
+      place-items: center;
+      font-size: 10px;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       PILLARS (Cards)
+       ═══════════════════════════════════════════════════════ */
+    .pillars-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      margin-bottom: 40px;
+      border-bottom: 1px solid var(--glass-border);
+      padding-bottom: 20px;
+    }
+
+    .cards-contain {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .pillar-card {
+      position: relative;
+      height: 400px;
+      overflow: hidden;
+      group: cursor-pointer;
+    }
+
+    .pillar-card__bg {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      transition: transform 0.8s var(--ease-out);
+      filter: grayscale(20%) brightness(0.8);
+    }
+    
+    .pillar-card:hover .pillar-card__bg {
+      transform: scale(1.05);
+      filter: grayscale(0%) brightness(0.9);
+    }
+
+    .pillar-card__content {
+      position: relative;
+      z-index: 2;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 30px;
+      background: linear-gradient(to top, #05080f 0%, transparent 80%);
+    }
+
+    .pillar-num {
+      font-family: var(--font-display);
+      font-size: 4rem;
+      position: absolute;
+      top: 10px;
+      right: 20px;
+      color: rgba(255,255,255,0.05);
+      line-height: 1;
+    }
+
+    .pillar-title {
+      font-size: 1.5rem;
+      margin-bottom: 12px;
+      color: #fff;
+    }
+
+    .pillar-desc {
+      font-size: 0.9rem;
+      color: #cbd5e1;
+      opacity: 0.85;
+      line-height: 1.5;
+    }
+
+    .pillar-card:hover .pillar-desc {
+      opacity: 1;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       ACTIVITIES SECTION
+       ═══════════════════════════════════════════════════════ */
+    .activities-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-top: 40px;
+    }
+
+    .activity-item {
+      background: var(--bg-panel);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid var(--glass-border);
+      padding: 28px 32px;
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      transition: all 0.4s var(--ease-out);
+    }
+
+    .activity-item:hover {
+      border-color: var(--glass-highlight);
+      transform: translateY(-2px);
+    }
+
+    .activity-icon {
+      flex-shrink: 0;
+      width: 40px;
+      height: 40px;
+      border: 1px solid var(--accent);
+      display: grid;
+      place-items: center;
+      font-size: 18px;
+      color: var(--accent);
+      font-family: var(--font-display);
+    }
+
+    .activity-item h4 {
+      font-size: 1rem;
+      margin-bottom: 6px;
+      color: var(--text-main);
+    }
+
+    .activity-item p {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       CTA / JOIN SECTION
+       ═══════════════════════════════════════════════════════ */
+    .cta-section {
+      text-align: center;
+      padding: 80px 0;
+    }
+
+    .cta-section h2 {
+      font-size: 2.5rem;
+      margin-bottom: 16px;
+    }
+
+    .cta-section p {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      max-width: 600px;
+      margin: 0 auto 32px;
+      line-height: 1.6;
+    }
+
+    .cta-details {
+      display: inline-grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1px;
+      background: var(--glass-border);
+      border: 1px solid var(--glass-border);
+      margin: 0 auto;
+      text-align: left;
+    }
+
+    .cta-details .spec-item {
+      min-width: 160px;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       FOOTER
+       ═══════════════════════════════════════════════════════ */
+    .footer-minimal {
+      border-top: 1px solid var(--glass-border);
+      padding: 40px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--text-dim);
+      font-size: 0.85rem;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .footer-minimal a {
+      color: var(--accent);
+      text-decoration: none;
+      transition: opacity 0.3s;
+    }
+    .footer-minimal a:hover { opacity: 0.7; }
+
+    /* ═══════════════════════════════════════════════════════
+       ANIMATIONS
+       ═══════════════════════════════════════════════════════ */
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.8s var(--ease-out);
+    }
+    .reveal.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Staggered text reveal */
+    .hero__title span, .hero__title div {
+      opacity: 0;
+      animation: fadeUp 1s var(--ease-out) forwards;
+    }
+    .hero__title span:nth-child(1) { animation-delay: 0.1s; }
+    .hero__title div { animation-delay: 0.3s; }
+    
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       RESPONSIVE
+       ═══════════════════════════════════════════════════════ */
+    @media (max-width: 900px) {
+      /* Mobile: Bring back the visual as a bg layer */
+      .hero__visual { 
+        display: block;
+        width: 100%;
+        opacity: 0.15;
+        mask-image: linear-gradient(to bottom, transparent, black 80%);
+        -webkit-mask-image: linear-gradient(to bottom, transparent, black 80%);
+      }
+      
+      .hero__title { font-size: 3rem; }
+      
+      .about-grid { grid-template-columns: 1fr; }
+      .about-visual { height: 300px; order: -1; margin-bottom: 40px; }
+      .cards-contain { grid-template-columns: 1fr; height: auto; }
+      .pillar-card { height: 300px; }
+      .pillar-desc { opacity: 1; transform: none; }
+      .activities-grid { grid-template-columns: 1fr; }
+      .cta-details { grid-template-columns: 1fr; }
+      .cta-section h2 { font-size: 1.8rem; }
+      .pillars-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background Layer -->
+  <div class="blueprint-grid"></div>
+  <div class="vignette"></div>
+
+  <!-- 1. HERO SECTION -->
+  <section class="container hero">
+    <div class="tech-cross" style="top: 0; left: 24px;"></div>
+    <div class="tech-cross" style="bottom: 0; right: 24px;"></div>
+
+    <div class="hero__visual">
+      <!-- One Vanderbilt -->
+      <img src="https://upload.wikimedia.org/wikipedia/commons/a/a0/One_Vanderbilt_Grand_Central.jpg" alt="One Vanderbilt">
+    </div>
+
+    <div class="hero__content">
+      <span class="label-mono">Browning School &bull; Est. 2025</span>
+      <h1 class="hero__title">
+        <span>ARC</span>
+        <div>Architecture &amp;<br>Real Estate Club</div>
+      </h1>
+      <p style="max-width: 520px; color: var(--text-muted); font-size: 1.1rem; margin-bottom: 20px; line-height: 1.6;">
+        We study the buildings, deals, and ideas that shape New York City — from the blueprint to the closing table.
+      </p>
+      
+      <div class="hero-specs reveal">
+        <div class="spec-item">
+          <div class="spec-label">When</div>
+          <div class="spec-val">Wednesdays @ Lunch</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-label">Where</div>
+          <div class="spec-val">Upper School</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-label">Open To</div>
+          <div class="spec-val">All Grades</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-label">Led By</div>
+          <div class="spec-val">Caspian &amp; Andrew</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-spacer"></div>
+
+  <!-- 2. ABOUT SECTION -->
+  <section class="container" id="about">
+    <div class="about-grid">
+      <div class="glass-panel about-text reveal">
+        <div class="mark mark-tl"></div><div class="mark mark-tr"></div>
+        <div class="mark mark-bl"></div><div class="mark mark-br"></div>
+        
+        <span class="label-mono">01 / What We're About</span>
+        <h3>Understanding the city we live in.</h3>
+        <br>
+        <p>Every building in New York has a story — who designed it, who financed it, and why it matters. The <strong>Architecture &amp; Real Estate Club (ARC)</strong> is where Browning students dig into those stories.</p>
+        
+        <p>We break down <strong>real projects</strong>: How did Hudson Yards get built? Why does a one-bedroom in Tribeca cost $2M? What makes the Guggenheim a masterpiece? Each week, we tackle a new question through case studies, guest discussions, and hands-on design thinking.</p>
+
+        <p>No experience needed — just curiosity about the world above, below, and around you.</p>
+
+        <div class="leadership-tag">
+          <div class="icon">&#9670;</div>
+          <div>
+            <div class="spec-label" style="margin:0;">Founded &amp; Led By</div>
+            <strong style="font-size: 0.9rem;">Caspian Farman-Farmanian &amp; Andrew Brodsky</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="about-visual reveal">
+        <div class="glass-frame"></div>
+        <!-- High Line -->
+        <img src="https://upload.wikimedia.org/wikipedia/commons/e/e2/The_High_Line%2C_New_York%2C_United_States_%28Unsplash_DOjEoly80Qc%29.jpg" alt="The High Line">
+      </div>
+    </div>
+  </section>
+
+  <div class="section-spacer"></div>
+
+  <!-- 3. PILLARS SECTION -->
+  <section class="container">
+    <div class="pillars-header reveal">
+      <div>
+        <span class="label-mono">02 / Core Pillars</span>
+        <h2 style="font-size: 2rem;">Foundations</h2>
+      </div>
+      <div style="text-align: right; max-width: 300px; font-size: 0.9rem; color: var(--text-dim);">
+        Everything we study connects back to one question: how does a city get built?
+      </div>
+    </div>
+
+    <div class="cards-contain">
+      <!-- Card 1: Architecture & Design -->
+      <article class="pillar-card reveal">
+        <div class="pillar-card__bg" style="background-image: url('https://upload.wikimedia.org/wikipedia/commons/f/fd/Frank_Lloyd_Wright_-_New_York%2C_NY_-_Solomon_R._Guggenheim_Museum_%28M%29.jpg');"></div>
+        <div class="pillar-num">01</div>
+        <div class="pillar-card__content">
+          <h3 class="pillar-title">Architecture &amp; Design</h3>
+          <p class="pillar-desc">
+            Study iconic NYC buildings — from the Oculus to One57. Learn to read floor plans, understand structural systems, and debate what makes great design.
+          </p>
+        </div>
+      </article>
+
+      <!-- Card 2: Real Estate & Finance -->
+      <article class="pillar-card reveal">
+        <div class="pillar-card__bg" style="background-image: url('https://upload.wikimedia.org/wikipedia/commons/a/a6/New_York_Stock_Exchange_August_2017_01.jpg');"></div>
+        <div class="pillar-num">02</div>
+        <div class="pillar-card__content">
+          <h3 class="pillar-title">Real Estate &amp; Finance</h3>
+          <p class="pillar-desc">
+            Break down how buildings get funded and sold. We analyze real deals, study market trends, and learn how zoning and development economics work in NYC.
+          </p>
+        </div>
+      </article>
+
+      <!-- Card 3: Urban Planning -->
+      <article class="pillar-card reveal">
+        <div class="pillar-card__bg" style="background-image: url('https://upload.wikimedia.org/wikipedia/commons/f/fc/Playing_the_guitar_in_Washington_Square_Park_DSC_0040_%285690666418%29.jpg');"></div>
+        <div class="pillar-num">03</div>
+        <div class="pillar-card__content">
+          <h3 class="pillar-title">Urban Planning</h3>
+          <p class="pillar-desc">
+            Explore how cities are designed — transit networks, public space, housing policy. We look at what NYC gets right, what it doesn't, and what's next.
+          </p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <div class="section-spacer"></div>
+
+  <!-- 4. WHAT WE DO SECTION -->
+  <section class="container">
+    <div class="reveal">
+      <span class="label-mono">03 / What a Meeting Looks Like</span>
+      <h2 style="font-size: 2rem; margin-bottom: 8px;">More than just a lecture.</h2>
+      <p style="color: var(--text-muted); max-width: 600px; margin-bottom: 8px;">Each Wednesday we rotate between different formats to keep things engaging. Here's what to expect:</p>
+    </div>
+
+    <div class="activities-grid">
+      <div class="activity-item reveal">
+        <div class="activity-icon">&#9633;</div>
+        <div>
+          <h4>Case Studies</h4>
+          <p>Deep dives into real NYC projects — we'll break down how Hudson Yards, the High Line, or a local condo flip actually happened, from permits to profit.</p>
+        </div>
+      </div>
+      <div class="activity-item reveal">
+        <div class="activity-icon">&#9651;</div>
+        <div>
+          <h4>Design Challenges</h4>
+          <p>Given a real site and constraints, sketch your own proposal. Past prompts: "Redesign Penn Station" and "Build affordable housing on a vacant Harlem lot."</p>
+        </div>
+      </div>
+      <div class="activity-item reveal">
+        <div class="activity-icon">&#9670;</div>
+        <div>
+          <h4>Market Watch</h4>
+          <p>We track live NYC real estate data — sale prices, rental trends, new construction. Members present a deal or neighborhood they've been following.</p>
+        </div>
+      </div>
+      <div class="activity-item reveal">
+        <div class="activity-icon">&amp;</div>
+        <div>
+          <h4>Guest Speakers &amp; Field Visits</h4>
+          <p>Conversations with architects, developers, and urban planners working in the city. We also plan walking tours of significant NYC neighborhoods and buildings.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-spacer"></div>
+
+  <!-- 5. JOIN CTA -->
+  <section class="container cta-section reveal">
+    <span class="label-mono">04 / Get Involved</span>
+    <h2>Join ARC.</h2>
+    <p>No prerequisites. No application. Just show up on Wednesday with your lunch and an interest in how the built world works. We're open to all Browning Upper School students.</p>
+    <div class="cta-details">
+      <div class="spec-item">
+        <div class="spec-label">When</div>
+        <div class="spec-val">Wednesdays @ Lunch</div>
+      </div>
+      <div class="spec-item">
+        <div class="spec-label">Where</div>
+        <div class="spec-val">Upper School</div>
+      </div>
+      <div class="spec-item">
+        <div class="spec-label">Contact</div>
+        <div class="spec-val">Caspian or Andrew</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-spacer"></div>
+
+  <!-- 6. FOOTER -->
+  <footer class="container footer-minimal">
+    <div>
+      <span style="color: var(--text-main); font-weight: 500;">ARC</span> &mdash; Architecture &amp; Real Estate Club &bull; 2025&ndash;2026
+    </div>
+    <div>
+      <a href="https://www.browning.edu" target="_blank" rel="noopener">The Browning School</a> &bull; 52 E 62nd St, New York, NY
+    </div>
+  </footer>
+
+  <!-- SCRIPT: Scroll Reveal -->
+  <script>
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('active');
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+  </script>
+
+</body>
+</html>
